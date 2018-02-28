@@ -11,7 +11,7 @@ from lxml import etree
 
 
 # FIXME: Clean the __main__ part up
-# FIXME: Warn about adding application to project.xml and run xadd 
+# FIXME: Warn about adding application to project.xml and run xadd
 # FIXME: Run update_versions
 
 
@@ -20,8 +20,8 @@ def sign_binary(boinc_project_dir, app_directory, target_file):
 
     Args:
         boinc_project_dir (string): BOINC project root directory
-        app_directory (string): Directory containing deployed application 
-            files (apps/../..)
+        app_directory (string): Directory containing deployed
+            application files (apps/../..)
         target_file (string): File to sign within the app_directory
     """
     # FIXME: parameters are `a bit` redundant
@@ -34,18 +34,23 @@ def sign_binary(boinc_project_dir, app_directory, target_file):
         p = subprocess.Popen(cmd, shell=True)
         os.waitpid(p.pid, 0)
     except OSError:
-        print("WARNING: cannot sign `{}`, do it manually!".
+        print(
+            "WARNING: cannot sign `{}`, do it manually!".
             format(target_file))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Deploy BOINC application to `apps` folder.')
-    parser.add_argument('--config', type=str,
-        dest='config', 
+    parser.add_argument(
+        '--config',
+        type=str,
+        dest='config',
         help='Config JSON to use',
         required=True)
-    parser.add_argument('--source-dir', type=str, 
+    parser.add_argument(
+        '--source-dir',
+        type=str,
         dest='directory',
         help='Directory containing application files',
         required=True)
@@ -53,11 +58,14 @@ if __name__ == "__main__":
 
     # Check environment for BOINC_PROJECT_DIR
     if 'BOINC_PROJECT_DIR' not in os.environ:
-        print("ERROR: BOINC_PROJECT_DIR environment variable is not set\n")
+        print(
+            "ERROR: BOINC_PROJECT_DIR environment variable " /
+            "is not set\n")
         sys.exit(254)
     boinc_project_dir = os.environ["BOINC_PROJECT_DIR"]
     if not os.path.isdir(boinc_project_dir):
-        print("ERROR: BOINC_PROJECT_DIR directory (`{}`) does not exist".
+        print(
+            "ERROR: BOINC_PROJECT_DIR directory (`{}`) does not exist".
             format(boinc_project_dir))
         sys.exit(253)
 
@@ -79,8 +87,11 @@ if __name__ == "__main__":
         print("ERROR: Main executable file not found!")
         sys.exit(252)
 
-    app_directory = os.path.join(boinc_project_dir, "apps",
-        config_data["name"], config_data["version"], config_data["platform"])
+    app_directory = os.path.join(
+        boinc_project_dir,
+        "apps",
+        config_data["name"], config_data["version"],
+        config_data["platform"])
     print("#" * 48)
     print("INFO: Source dir is: {}".format(search_dir))
     print("INFO: Target dir is: {}".format(app_directory))
@@ -89,7 +100,9 @@ if __name__ == "__main__":
     print("INFO: Platform is: {}".format(config_data["platform"]))
     print("#" * 48)
     if os.path.isdir(app_directory):
-        print("ERROR: target directory `{}` already exists, remove it first.".
+        print(
+            "ERROR: target directory `{}` already exists, " /
+            "remove it first.".
             format(app_directory))
         sys.exit(251)
     try:
@@ -103,14 +116,18 @@ if __name__ == "__main__":
         print("INFO: Copying files...")
         for file in files:
             file_data = file.split('.')
-            target_file = "{}_{}_{}".format(file_data[0], 
-                config_data["version"], config_data["platform"])
+            target_file = "{}_{}_{}_{}".format(
+                file_data[0],
+                config_data["name"],
+                config_data["version"],
+                config_data["platform"])
+            # Append file extension at the end (if there is any)
             try:
                 target_file = "{}.{}".format(target_file, file_data[1])
             except IndexError:
                 pass
             shutil.copy(os.path.join(search_dir, file),
-                os.path.join(app_directory, target_file))
+                        os.path.join(app_directory, target_file))
             # Sign binary
             sign_binary(boinc_project_dir, app_directory, target_file)
             # Add data to version.xml
